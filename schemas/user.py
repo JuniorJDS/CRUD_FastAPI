@@ -10,12 +10,12 @@ class UserBase(BaseModel):
     cpf: str
     cep: str
 
-    @validator('cep')
-    def cep_validator(cls, v):
-        regex = re.compile('^\d{8}$')
+    #@validator('cep')
+    #def cep_validator(cls, v):
+        #regex = re.compile('^\d{8}$')
 
-        assert regex.match(v), 'CEP com Formato inválido.'
-        return v
+        #assert regex.match(v), 'CEP com Formato inválido.'
+        #return v
 
 class UserCreate(UserBase):
     pass

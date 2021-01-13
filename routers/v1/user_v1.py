@@ -8,7 +8,8 @@ from pycep_correios import get_address_from_cep
 import aiohttp
 import asyncio
 from aiohttp import ClientSession
-from crud import crete_post
+from crud import crete_post, get_cpf, get_all
+from typing import List
 
 
 router = APIRouter(
@@ -26,9 +27,9 @@ async def shutdown_event():
 
 
 
-@router.get("")
+@router.get("", response_model=List[user.UserCreate])
 async def get_hello():
-    return {'message': 'Hello World version 1'}
+    return await get_all()
 
 async def get_cep(user):
     '''
@@ -60,6 +61,9 @@ async def create_user(user:user.UserAdress, db: Session = Depends(deps.get_db)):
 # primeiro teste com database assincronomo
 @router.post("/teste", status_code=HTTP_201_CREATED)
 async def new_user(user: user.UserAdress):
+    user_db = await get_cpf(user.cpf)
+    if user_db:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="CPF already registered")
 
     endereco = await get_cep(user)
 
@@ -72,8 +76,7 @@ async def new_user(user: user.UserAdress):
 
     response_object = {
         "id": user_id,
-        "nome": user.nome,
-        "cpf": user.cpf,
+        **user.dict()
     }
     
     return response_object
