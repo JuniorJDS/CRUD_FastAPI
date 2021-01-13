@@ -8,6 +8,7 @@ from pycep_correios import get_address_from_cep
 import aiohttp
 import asyncio
 from aiohttp import ClientSession
+from crud import crete_post
 
 
 router = APIRouter(
@@ -22,6 +23,8 @@ async def startup_event():
 @router.on_event('shutdown')
 async def shutdown_event():
     await session.close()
+
+
 
 @router.get("")
 async def get_hello():
@@ -52,3 +55,25 @@ async def create_user(user:user.UserAdress, db: Session = Depends(deps.get_db)):
     user.estado = endereco.get('uf')
     
     return user #user_services.create_user(db=db, user=user)
+
+
+# primeiro teste com database assincronomo
+@router.post("/teste", status_code=HTTP_201_CREATED)
+async def new_user(user: user.UserAdress):
+
+    endereco = await get_cep(user)
+
+    user.rua = endereco.get('logradouro')
+    user.bairro = endereco.get('bairro')
+    user.cidade = endereco.get('localidade')
+    user.estado = endereco.get('uf')
+
+    user_id = await crete_post(user)
+
+    response_object = {
+        "id": user_id,
+        "nome": user.nome,
+        "cpf": user.cpf,
+    }
+    
+    return response_object
